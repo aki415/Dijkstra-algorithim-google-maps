@@ -40,17 +40,22 @@ override fun onCreate(savedInstanceState: Bundle?) {
     } else {
         initializeMap()
         addVerticesAndEdges()
+        setupUIComponents()
+        setupCustomMarkers()
+        setupMapOverlays()
+        setupErrorHandling()
+        setupAdditionalDataStructures()
     }
 }
 
 private fun addVerticesAndEdges() {
     // Add vertices
-    val vertexA = graph.addVertex("A", 37.7749, -122.4194) // Example vertex with name "A" and coordinates (37.7749, -122.4194)
-    val vertexB = graph.addVertex("B", 37.3352, -121.8811) // Example vertex with name "B" and coordinates (37.3352, -121.8811)
+    val vertexA = graph.addVertex("A", 37.7749, -122.4194) //  vertex with name "A" and coordinates (37.7749, -122.4194)
+    val vertexB = graph.addVertex("B", 37.3352, -121.8811) // vertex with name "B" and coordinates (37.3352, -121.8811)
 
     // Add edges
-    graph.addEdge(vertexA, vertexB, 10) // Example edge from vertex A to vertex B with weight 10
-    // Add more vertices and edges as needed
+    graph.addEdge(vertexA, vertexB, 10) // edge from vertex A to vertex B with weight 10
+    
 }
 
     private fun initializeMap() {
@@ -188,6 +193,155 @@ private fun addVerticesAndEdges() {
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
+//Ui search places
+    private fun setupSearchView() {
+        searchView = findViewById(R.id.search_view)
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                performSearch(query)
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                performSearch(newText)
+                return true
+            }
+        })
+    }
+
+    private fun setupUIComponents() {
+        // Set up additional UI components and layouts
+
+        // Add a button to the layout and set an onClickListener
+        val button = findViewById<Button>(R.id.my_button)
+        button.setOnClickListener {
+            
+        }
+    }
+
+    private fun setupCustomMarkers() {
+        // Set up custom marker icons and styles
+        // Customize the markers on the map with your own icons, colors, and labels
+
+        //Create a custom marker icon
+        val markerIcon = BitmapDescriptorFactory.fromResource(R.drawable.my_marker_icon)
+
+        // Add a marker to the map with a custom icon
+        val markerOptions = MarkerOptions()
+            .position(LatLng(37.7749, -122.4194))
+            .title("Custom Marker")
+            .icon(markerIcon)
+
+        googleMap.addMarker(markerOptions)
+    }
+
+    private fun setupMapOverlays() {
+        // Set up custom map overlays or layers
+       
+        // polygon overlay in map
+        val polygonOptions = PolygonOptions()
+            .add(LatLng(37.7749, -122.4194))
+            .add(LatLng(37.3352, -121.8811))
+            .add(LatLng(37.422, -122.084))
+            .strokeColor(Color.RED)
+            .fillColor(Color.argb(100, 255, 0, 0))
+
+        googleMap.addPolygon(polygonOptions)
+    }
+
+    private fun setupErrorHandling() {
+          // Set up error handling and exception handling logic
+    
+          // Implement an error handler for network requests
+          val errorHandler = ErrorHandler()
+          errorHandler.setErrorListener { error ->
+        // Handle the error
+        // Display an error message to the user or perform appropriate actions
+        Toast.makeText(this, "An error occurred: $error", Toast.LENGTH_SHORT).show()
+    }
+    
+    //Use the error handler for network requests
+    val apiClient = ApiClient()
+    apiClient.setErrorHandler(errorHandler)
+    apiClient.makeRequest()
+     
+    }
+
+    private fun setupAdditionalDataStructures() {
+    
+        //use a data structure for storing map markers
+        val markersList = mutableListOf<Marker>()
+
+        //Add a marker to the list
+        val marker = googleMap.addMarker(MarkerOptions().position(LatLng(37.7749, -122.4194)))
+        markersList.add(marker)
+
+        //Perform operations on the markers list
+        markersList.forEach { marker ->
+            // Access marker properties
+            val position = marker.position
+            val title = marker.title
+            val snippet = marker.snippet
+
+    // show an info window for a specific marker
+    if (title == "Custom Marker") {
+        marker.showInfoWindow()
+        }
+    }
+
+//perform the actual search operation based on the query, using Google Places API.
+    private fun searchPlaces(query: String) {
+    val placesClient = Places.createClient(this)
+    
+    // Create a FindAutocompletePredictionsRequest with the query
+    val request = FindAutocompletePredictionsRequest.builder()
+        .setQuery(query)
+        .build()
+    
+    // Call the findAutocompletePredictions method to get place predictions
+    placesClient.findAutocompletePredictions(request)
+        .addOnSuccessListener { response ->
+            // Handle the successful response
+            val predictions = response.autocompletePredictions
+            
+            // Process the predictions, e.g., display them on the map or in a list view
+            
+            for (prediction in predictions) {
+                val placeId = prediction.placeId
+                
+                // Get place details for each prediction
+                val placeFields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG)
+                val fetchPlaceRequest = FetchPlaceRequest.builder(placeId, placeFields).build()
+                
+                placesClient.fetchPlace(fetchPlaceRequest)
+                    .addOnSuccessListener { fetchResponse ->
+                        // Handle the successful fetch response
+                        val place = fetchResponse.place
+                        
+                        val name = place.name
+                        val latLng = place.latLng
+                        
+                        // Display the place details on the map or in a list view
+                        //create a marker at the place's location
+                        if (latLng != null) {
+                            val markerOptions = MarkerOptions()
+                                .position(latLng)
+                                .title(name)
+                                
+                            googleMap.addMarker(markerOptions)
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        // Handle the fetch place failure
+                        Log.e(TAG, "Failed to fetch place: ${exception.message}")
+                    }
+            }
+        }
+        .addOnFailureListener { exception ->
+            // Handle the findAutocompletePredictions failure
+            Log.e(TAG, "Failed to search for places: ${exception.message}")
+        }
+}
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
