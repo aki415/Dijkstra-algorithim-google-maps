@@ -23,10 +23,10 @@ override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_maps)
 
-    // Initialize the graph
+    // Initializes the graph
     graph = Graph()
 
-    // Request location permission
+    // Requests location permission
     if (ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -48,29 +48,28 @@ override fun onCreate(savedInstanceState: Bundle?) {
     }
 }
 
+//this function adds vertices and edges to the graph.
 private fun addVerticesAndEdges() {
-    // Add vertices
-    val vertexA = graph.addVertex("A", 37.7749, -122.4194) //  vertex with name "A" and coordinates (37.7749, -122.4194)
-    val vertexB = graph.addVertex("B", 37.3352, -121.8811) // vertex with name "B" and coordinates (37.3352, -121.8811)
-
-    // Add edges
+    val vertexA = graph.addVertex("A", 37.7749, -122.4194) 
+    val vertexB = graph.addVertex("B", 37.3352, -121.8811)
+     // Adds edges
     graph.addEdge(vertexA, vertexB, 10) // edge from vertex A to vertex B with weight 10
     
 }
-
+ // Obtains the SupportMapFragment and get notified when the map is ready to be used
     private fun initializeMap() {
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used
+       
         val mapFragment =
             supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
     }
-
+//This function is called when the map is ready to be used
     override fun onMapReady(map: GoogleMap) {
-        // Called when the map is ready to be used
+        
         googleMap = map
         googleMap.isMyLocationEnabled = true
 
-        // Set a listener to handle map clicks
+        // Sets a listener to handle map clicks
         googleMap.setOnMapClickListener { latLng ->
             val clickedVertex = findClosestVertex(latLng)
 
@@ -87,7 +86,7 @@ private fun addVerticesAndEdges() {
             }
         }
     }
-
+//finds the closest vertex to the clicked location on the map.
     private fun findClosestVertex(latLng: LatLng): Graph.Vertex? {
         var closestVertex: Graph.Vertex? = null
         var shortestDistance = Double.MAX_VALUE
@@ -96,8 +95,8 @@ private fun addVerticesAndEdges() {
             val vertexLatLng = LatLng(vertex.latitude, vertex.longitude)
             val distance = calculateDistance(latLng, vertexLatLng)
 
-// Iterate through all vertices in the graph to find the closest vertex to the clicked location
- // Update the closest vertex and shortest distance if a closer vertex is found
+// Iterates through all vertices in the graph to find the closest vertex to the clicked location
+ // Updates the closest vertex and shortest distance if a closer vertex is found
             if (distance < shortestDistance) {
                 shortestDistance = distance
                 closestVertex = vertex
@@ -106,14 +105,14 @@ private fun addVerticesAndEdges() {
 
         return closestVertex
     }
-
+//calculates distance
     private fun calculateDistance(latLng1: LatLng, latLng2: LatLng): Double {
         val earthRadius = 6371 // Radius of the Earth in kilometers
 
         val latDistance = Math.toRadians(latLng2.latitude - latLng1.latitude)
         val lngDistance = Math.toRadians(latLng2.longitude - latLng1.longitude)
 
-// Haversine formula to calculate the great-circle distance between two points on the Earth's surface
+//uses haversines formula to calculate distance between two points on the Earth's surface
         val a = (Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
                 + (Math.cos(Math.toRadians(latLng1.latitude)) * Math.cos(Math.toRadians(latLng2.latitude))
                 * Math.sin(lngDistance / 2) * Math.sin(lngDistance / 2)))
@@ -122,7 +121,7 @@ private fun addVerticesAndEdges() {
 
         return earthRadius * c
     }
-
+//implements Dijkstra's algorithm to find the shortest path between two vertices in the graph
     private fun dijkstraAlgorithm(startVertex: Graph.Vertex, endVertex: Graph.Vertex): List<Graph.Vertex> {
         val distances = mutableMapOf<Graph.Vertex, Double>()
         val previous = mutableMapOf<Graph.Vertex, Graph.Vertex>()
@@ -220,13 +219,13 @@ private fun addVerticesAndEdges() {
     }
 
     private fun setupCustomMarkers() {
-        // Set up custom marker icons and styles
-        // Customize the markers on the map with your own icons, colors, and labels
+        // Sets up custom marker icons and styles
+        // Customises the markers on the map with your own icons, colors, and labels
 
-        //Create a custom marker icon
+        //Creates a custom marker icon
         val markerIcon = BitmapDescriptorFactory.fromResource(R.drawable.my_marker_icon)
 
-        // Add a marker to the map with a custom icon
+        // Adds a marker to the map with a custom icon
         val markerOptions = MarkerOptions()
             .position(LatLng(37.7749, -122.4194))
             .title("Custom Marker")
@@ -236,7 +235,7 @@ private fun addVerticesAndEdges() {
     }
 
     private fun setupMapOverlays() {
-        // Set up custom map overlays or layers
+        // Sets up custom map overlays or layers
        
         // polygon overlay in map
         val polygonOptions = PolygonOptions()
@@ -250,17 +249,17 @@ private fun addVerticesAndEdges() {
     }
 
     private fun setupErrorHandling() {
-          // Set up error handling and exception handling logic
+          // Sets up error handling and exception handling logic
     
-          // Implement an error handler for network requests
+          // Implements an error handler for network requests
           val errorHandler = ErrorHandler()
           errorHandler.setErrorListener { error ->
-        // Handle the error
-        // Display an error message to the user or perform appropriate actions
+        // Handles the error
+        // Displays an error message to the user or perform appropriate actions
         Toast.makeText(this, "An error occurred: $error", Toast.LENGTH_SHORT).show()
     }
     
-    //Use the error handler for network requests
+    //Uses the error handler for network requests
     val apiClient = ApiClient()
     apiClient.setErrorHandler(errorHandler)
     apiClient.makeRequest()
@@ -269,60 +268,60 @@ private fun addVerticesAndEdges() {
 
     private fun setupAdditionalDataStructures() {
     
-        //use a data structure for storing map markers
+        //uses a data structure for storing map markers
         val markersList = mutableListOf<Marker>()
 
-        //Add a marker to the list
+        //Adds a marker to the list
         val marker = googleMap.addMarker(MarkerOptions().position(LatLng(37.7749, -122.4194)))
         markersList.add(marker)
 
-        //Perform operations on the markers list
+        //Performs operations on the markers list
         markersList.forEach { marker ->
             // Access marker properties
             val position = marker.position
             val title = marker.title
             val snippet = marker.snippet
 
-    // show an info window for a specific marker
+    // shows an info window for a specific marker
     if (title == "Custom Marker") {
         marker.showInfoWindow()
         }
     }
 
-//perform the actual search operation based on the query, using Google Places API.
+//performs the actual search operation based on the query, using Google Places API.
     private fun searchPlaces(query: String) {
     val placesClient = Places.createClient(this)
     
-    // Create a FindAutocompletePredictionsRequest with the query
+    // Creates a FindAutocompletePredictionsRequest with the query
     val request = FindAutocompletePredictionsRequest.builder()
         .setQuery(query)
         .build()
     
-    // Call the findAutocompletePredictions method to get place predictions
+    // Calls the findAutocompletePredictions method to get place predictions
     placesClient.findAutocompletePredictions(request)
         .addOnSuccessListener { response ->
             // Handle the successful response
             val predictions = response.autocompletePredictions
             
-            // Process the predictions, e.g., display them on the map or in a list view
+            // Processes the predictions
             
             for (prediction in predictions) {
                 val placeId = prediction.placeId
                 
-                // Get place details for each prediction
+                // Gets place details for each prediction
                 val placeFields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG)
                 val fetchPlaceRequest = FetchPlaceRequest.builder(placeId, placeFields).build()
                 
                 placesClient.fetchPlace(fetchPlaceRequest)
                     .addOnSuccessListener { fetchResponse ->
-                        // Handle the successful fetch response
+                        // Handles the successful fetch response
                         val place = fetchResponse.place
                         
                         val name = place.name
                         val latLng = place.latLng
                         
-                        // Display the place details on the map or in a list view
-                        //create a marker at the place's location
+                        // Displays the place details on the map or in a list view
+                        //creates a marker at the place's location
                         if (latLng != null) {
                             val markerOptions = MarkerOptions()
                                 .position(latLng)
@@ -338,11 +337,11 @@ private fun addVerticesAndEdges() {
             }
         }
         .addOnFailureListener { exception ->
-            // Handle the findAutocompletePredictions failure
+            // Handles the findAutocompletePredictions failure
             Log.e(TAG, "Failed to search for places: ${exception.message}")
         }
 }
-
+//this function is called when the user allows or denies the location permission request
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
@@ -353,7 +352,7 @@ private fun addVerticesAndEdges() {
         ) {
             initializeMap()
         } else {
-        // Handle the result of the location permission request
+        // Handles the result of the location permission request
             showToast("Location permission denied")
         }
     }
